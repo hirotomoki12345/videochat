@@ -1,0 +1,54 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+#name-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+#name-input-container input {
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+#name-input-container button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#controls {
+  display: none;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+#video-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#video-grid div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px;
+}
+
+#video-grid video {
+  width: 200px;
+  height: 150px;
+  background: black;
+}
+
+#video-grid div div {
+  margin-top: 5px;
+  text-align: center;
+  font-size: 14px;
+}
