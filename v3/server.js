@@ -1,17 +1,10 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const { ExpressPeerServer } = require("peer");
-
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const peerServer = ExpressPeerServer(server, {
-  debug: true,
-});
-
-app.use("/peerjs", peerServer);
 app.use(express.static("public"));
 
 let rooms = {};
@@ -25,7 +18,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("join-room", (roomId, userId, name) => {
+  socket.on("join-room", (roomId, name) => {
     if (!rooms[roomId]) {
       rooms[roomId] = [];
     }
@@ -33,14 +26,26 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socket.roomId = roomId;
     socket.name = name;
-    socket.to(roomId).emit("user-connected", userId, name);
+    socket.to(roomId).emit("user-connected", socket.id, name);
 
     socket.on("disconnect", () => {
       const index = rooms[roomId].indexOf(name);
       if (index !== -1) {
         rooms[roomId].splice(index, 1);
       }
-      socket.to(roomId).emit("user-disconnected", userId);
+      socket.to(roomId).emit("user-disconnected", socket.id);
+    });
+
+    socket.on("offer", (userId, offer) => {
+      socket.to(userId).emit("user-data", socket.id, name, offer);
+    });
+
+    socket.on("answer", (userId, answer) => {
+      socket.to(userId).emit("answer", socket.id, answer);
+    });
+
+    socket.on("candidate", (userId, candidate) => {
+      socket.to(userId).emit("candidate", socket.id, candidate);
     });
   });
 });
