@@ -153,3 +153,30 @@ socket.on("username-available", (name) => {
   nameInputContainer.style.display = "none";
   init(name);
 });
+
+
+function generateRandomString(length) {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters[randomIndex];
+  }
+  return result;
+}
+
+function redirectToRandomUrl() {
+  const currentUrl = window.location.href;
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // クエリパラメータが存在しない場合
+  if (!urlParams.toString()) {
+    const randomString = generateRandomString(100);
+    const baseUrl = currentUrl.split("?")[0].split("#")[0];
+    const newUrl = `${baseUrl}?id=${randomString}`;
+    window.location.href = newUrl;
+  }
+}
+redirectToRandomUrl();
+window.onload = redirectToRandomUrl;
