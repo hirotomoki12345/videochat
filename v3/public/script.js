@@ -8,8 +8,7 @@ const cameraButton = document.getElementById("camera-button");
 const controls = document.getElementById("controls");
 
 let localStream;
-let peer;
-let peers = {};
+let peerConnections = {};
 let isMuted = false;
 let isCameraOff = false;
 
@@ -53,52 +52,81 @@ async function init(name) {
 
   controls.style.display = "flex";
 
-  peer = new Peer(undefined, {
-    host: "/",
-    port: "3001",
-  });
-
-  peer.on("open", (id) => {
-    socket.emit("join-room", roomId, id, name);
-  });
+  socket.emit("join-room", roomId, name);
 
   socket.on("user-connected", (userId, userName) => {
-    connectToNewUser(userId, localStream, userName);
+    connectToNewUser(userId, userName);
   });
 
   socket.on("user-disconnected", (userId) => {
-    if (peers[userId]) peers[userId].close();
+    if (peerConnections[userId]) {
+      peerConnections[userId].close();
+      delete peerConnections[userId];
+    }
     const videoElement = document.getElementById(userId);
     if (videoElement) {
       videoElement.remove();
     }
   });
 
-  peer.on("call", (call) => {
-    call.answer(localStream);
-    call.on("stream", (userVideoStream) => {
-      if (!document.getElementById(call.peer)) {
-        addVideoStream(call.peer, userVideoStream, call.metadata.name);
+  socket.on("user-data", (userId, userName, offer) => {
+    const peerConnection = new RTCPeerConnection();
+    peerConnections[userId] = peerConnection;
+
+    peerConnection.addStream(localStream);
+
+    peerConnection.ontrack = (event) => {
+      if (!document.getElementById(userId)) {
+        addVideoStream(userId, event.streams[0], userName);
       }
+    };
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("candidate", userId, event.candidate);
+      }
+    };
+
+    peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    peerConnection.createAnswer().then((answer) => {
+      peerConnection.setLocalDescription(answer);
+      socket.emit("answer", userId, answer);
     });
   });
-}
 
-function connectToNewUser(userId, stream, userName) {
-  const call = peer.call(userId, stream, { metadata: { name: userName } });
-  call.on("stream", (userVideoStream) => {
-    if (!document.getElementById(userId)) {
-      addVideoStream(userId, userVideoStream, userName);
-    }
-  });
-  call.on("close", () => {
-    const videoElement = document.getElementById(userId);
-    if (videoElement) {
-      videoElement.remove();
-    }
+  socket.on("candidate", (userId, candidate) => {
+    const peerConnection = peerConnections[userId];
+    peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   });
 
-  peers[userId] = call;
+  socket.on("answer", (userId, answer) => {
+    const peerConnection = peerConnections[userId];
+    peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+  });
+
+  function connectToNewUser(userId, userName) {
+    const peerConnection = new RTCPeerConnection();
+    peerConnections[userId] = peerConnection;
+
+    peerConnection.addStream(localStream);
+
+    peerConnection.ontrack = (event) => {
+      if (!document.getElementById(userId)) {
+        addVideoStream(userId, event.streams[0], userName);
+      }
+    };
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("candidate", userId, event.candidate);
+      }
+    };
+
+    peerConnection.createOffer().then((offer) => {
+      peerConnection.setLocalDescription(offer);
+      socket.emit("offer", userId, offer);
+    });
+  }
 }
 
 function addVideoStream(id, stream, name, isLocal = false) {
