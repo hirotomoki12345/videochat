@@ -2,6 +2,7 @@
 
 # 変数の定義
 repo_dir="videochat/v4"
+repo_base="videochat"
 
 # ルートチェック関数
 check_root() {
@@ -57,7 +58,7 @@ delete_app() {
     echo "アプリを削除します..."
     pm2 stop videochat
     pm2 delete videochat
-    rm -rf "$repo_dir"
+    rm -rf "$repo_base"
     echo "アプリが削除されました。"
 }
 
@@ -89,20 +90,18 @@ while true; do
         1)
             install_nvm
             install_pm2
-            if [ -d "$repo_dir" ]; then
-                read -p "既にクローン済みです。削除して再インストールしますか？ (y/n): " reinstall_choice
-                if [[ "$reinstall_choice" == "y" ]]; then
-                    delete_app
-                    git clone https://github.com/hirotomoki12345/videochat.git
-                    cd "$repo_dir" || { echo "ディレクトリに移動できませんでした。"; exit 1; }
+            if [ -d "$repo_base" ]; then
+                if [ -d "$repo_dir" ]; then
+                    echo "既にクローン済みです。アプリを起動します。"
                     start_app
                 else
-                    cd "$repo_dir" || { echo "ディレクトリに移動できませんでした。"; exit 1; }
+                    echo "v4ディレクトリが見つかりません。再クローンします。"
+                    delete_app
+                    git clone https://github.com/hirotomoki12345/videochat.git
                     start_app
                 fi
             else
                 git clone https://github.com/hirotomoki12345/videochat.git
-                cd "$repo_dir" || { echo "ディレクトリに移動できませんでした。"; exit 1; }
                 start_app
             fi
             ;;
