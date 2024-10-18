@@ -93,13 +93,15 @@ while true; do
                 read -p "既にクローン済みです。削除して再インストールしますか？ (y/n): " reinstall_choice
                 if [[ "$reinstall_choice" == "y" ]]; then
                     delete_app
-                    git clone https://github.com/hirotomoki12345/videochat.git "$repo_dir"
+                    git clone https://github.com/hirotomoki12345/videochat.git
+                    cd "$repo_dir"
                     start_app
                 else
                     start_app
                 fi
             else
-                git clone https://github.com/hirotomoki12345/videochat.git "$repo_dir"
+                git clone https://github.com/hirotomoki12345/videochat.git
+                cd "$repo_dir"
                 start_app
             fi
             ;;
