@@ -50,6 +50,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(2345, () => {
-  console.log("Server is running on port http://localhost:2345");
+server.listen(9287, () => {
+  console.log("Server is running on port http://localhost:9287");
 });
