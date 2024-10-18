@@ -24,5 +24,5 @@ function redirect() {
     }
 
     // RoomIDと名前をURLに追加してリダイレクト
-    window.location.href = `/index.html?id=${roomid}&username=${username}`;
+    window.location.href = `/chat.html?id=${roomid}&username=${username}`;
 }
