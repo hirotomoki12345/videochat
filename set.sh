@@ -1,9 +1,20 @@
 #!/bin/bash
 
+# 変数の定義
+repo_dir="videochat/v4"
+
 # ルートチェック関数
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo "このスクリプトはスーパーユーザー権限で実行する必要があります。"
+        exit 1
+    fi
+}
+
+# Gitがインストールされているか確認
+check_git() {
+    if ! command -v git &> /dev/null; then
+        echo "Gitがインストールされていません。インストールしてください。"
         exit 1
     fi
 }
@@ -32,8 +43,12 @@ install_pm2() {
 
 start_app() {
     echo "アプリを起動します..."
-    cd videochat/v5
+    cd "$repo_dir" || { echo "ディレクトリに移動できませんでした。"; exit 1; }
     npm install
+    if [ $? -ne 0 ]; then
+        echo "npm installに失敗しました。"
+        exit 1
+    fi
     pm2 start server.js --name "videochat"
     echo "アプリが起動しました。"
 }
@@ -42,8 +57,7 @@ delete_app() {
     echo "アプリを削除します..."
     pm2 stop videochat
     pm2 delete videochat
-    cd ..
-    rm -rf videochat
+    rm -rf "$repo_dir"
     echo "アプリが削除されました。"
 }
 
@@ -59,6 +73,7 @@ quit() {
 
 # ルート権限を確認
 check_root
+check_git
 
 # メインのループ
 while true; do
@@ -74,8 +89,19 @@ while true; do
         1)
             install_nvm
             install_pm2
-            git clone https://github.com/hirotomoki12345/videochat.git
-            start_app
+            if [ -d "$repo_dir" ]; then
+                read -p "既にクローン済みです。削除して再インストールしますか？ (y/n): " reinstall_choice
+                if [[ "$reinstall_choice" == "y" ]]; then
+                    delete_app
+                    git clone https://github.com/hirotomoki12345/videochat.git "$repo_dir"
+                    start_app
+                else
+                    start_app
+                fi
+            else
+                git clone https://github.com/hirotomoki12345/videochat.git "$repo_dir"
+                start_app
+            fi
             ;;
         2)
             delete_app
