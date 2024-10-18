@@ -51,8 +51,10 @@ start_app() {
         exit 1
     fi
     pm2 start server.js --name "videochat"
+    pm2 save 
     echo "アプリが起動しました。"
 }
+
 
 delete_app() {
     echo "アプリを削除します..."
