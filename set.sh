@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 変数の定義
-repo_dir="videochat/v4"
+repo_dir="videochat/v5"
 repo_base="videochat"
 
 # ルートチェック関数
