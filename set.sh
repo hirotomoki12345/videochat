@@ -94,14 +94,15 @@ while true; do
                 if [[ "$reinstall_choice" == "y" ]]; then
                     delete_app
                     git clone https://github.com/hirotomoki12345/videochat.git
-                    cd "$repo_dir"
+                    cd "$repo_dir" || { echo "ディレクトリに移動できませんでした。"; exit 1; }
                     start_app
                 else
+                    cd "$repo_dir" || { echo "ディレクトリに移動できませんでした。"; exit 1; }
                     start_app
                 fi
             else
                 git clone https://github.com/hirotomoki12345/videochat.git
-                cd "$repo_dir"
+                cd "$repo_dir" || { echo "ディレクトリに移動できませんでした。"; exit 1; }
                 start_app
             fi
             ;;
